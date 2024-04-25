@@ -4,7 +4,7 @@ CREATE PROCEDURE AddBonus(IN user_id INT, IN project_name VARCHAR(255), IN score
 BEGIN
     DECLARE id_project INT;
     SELECT id INTO id_project FROM projects WHERE name = project_name;
-    IF id_project IS NULL
+    IF id_project IS NULL THEN
         INSERT INTO projects (name) VALUES (project_name);
         SET id_project = LAST_INSERT_ID();
     END IF;
