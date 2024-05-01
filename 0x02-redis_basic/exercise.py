@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """blueprint for creation object of Cache"""
 from uuid import uuid4
 from redis import Redis
