@@ -31,6 +31,23 @@ def count_calls(method: Callable) -> Callable:
     return wrapper
 
 
+def replay(method: Callable) -> None:
+    """
+    display the history of calls of a particular function
+    """
+    client = redis.Redis()
+    func_name = method.__qualname__
+    nb_calls = client.get(func_name).decode('utf-8')
+    print(f"{func_name} was called {nb_calls} times:")
+    input_key = f"{func_name}:inputs"
+    output_key = f"{func_name}:outputs"
+    input_list = client.lrange(input_key, 0, -1)
+    output_list = client.lrange(output_key, 0, -1)
+    for input, output in zip(input_list, output_list):
+        print('{}(*{}) -> {}'.format(func_name, input.decode("utf-8"),
+                                     output.decode("utf-8"),))
+
+
 class Cache:
     """implement properties and methods of class Cache"""
 
@@ -60,18 +77,3 @@ class Cache:
     def get_int(self, key: str) -> Union[int, None]:
         """ get integer value from redis database"""
         return self.get(key, lambda x: int(x))
-
-    def replay(self, method: Callable) -> None:
-        """
-        display the history of calls of a particular function
-        """
-        func_name = method.__qualname__
-        nb_calls = self.get(func_name).decode('utf-8')
-        print(f"{func_name} was called {nb_calls} times:")
-        input_key = f"{func_name}:inputs"
-        output_key = f"{func_name}:outputs"
-        input_list = self._redis.lrange(input_key, 0, -1)
-        output_list = self._redis.lrange(output_key, 0, -1)
-        for input, output in zip(input_list, output_list):
-            print('{}(*{}) -> {}'.format(func_name, input.decode("utf-8"),
-                                         output.decode("utf-8"),))
