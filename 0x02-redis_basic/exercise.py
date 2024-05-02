@@ -60,3 +60,18 @@ class Cache:
     def get_int(self, key: str) -> Union[int, None]:
         """ get integer value from redis database"""
         return self.get(key, lambda x: int(x))
+
+    def replay(self, method: Callable) -> None:
+        """
+        display the history of calls of a particular function
+        """
+        func_name = method.__qualname__
+        nb_calls = self.get_int(func_name)
+        print(f"{func_name} was called {nb_calls} times:")
+        input_key = f"{func_name}:inputs"
+        output_key = f"{func_name}:outputs"
+        input_list = self._redis.lrange(input_key, 0, -1)
+        output_list = self._redis.lrange(output_key, 0, -1)
+        for input, output in zip(input_list, output_list):
+            tuple_type = eval(input)
+            print(f"{func_name}(*{tuple_type}) -> {output.decode('utf-8')}")
